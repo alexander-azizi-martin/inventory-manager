@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ProductTags {
+  productID String   @map("product_id") @db.Uuid
+  tagID     String   @map("tag_id") @db.Uuid
+  products  Products @relation(fields: [productID], references: [productID], onDelete: Cascade, onUpdate: NoAction)
+  tags      Tags     @relation(fields: [tagID], references: [tagID], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([productID, tagID])
+  @@map("product_tags")
+}
+
+model ProductTypes {
+  productTypeID String @id @default(dbgenerated("uuid_generate_v4()")) @map("product_type_id") @db.Uuid
+  productType   String @unique @map("product_type") @db.VarChar(50)
+
+  @@map("product_types")
+}
+
+model Products {
+  productID        String        @id @default(dbgenerated("uuid_generate_v4()")) @map("product_id") @db.Uuid
+  title            String        @db.VarChar(50)
+  description      String?
+  status           ProductStatus @default(ARCHIVE)
+  price            Float         @default(0)
+  cost             Float?
+  vendor           String        @db.VarChar(50)
+  productType      String?       @map("product_type") @db.VarChar(50)
+  barcode          String?
+  stockKeepingUnit String?       @map("stock_keeping_unit")
+  quantity         Int           @default(0)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime      @default(now()) @map("updated_at") @db.Timestamp(6)
+  productTags      ProductTags[]
+
+  @@map("products")
+}
+
+model Tags {
+  tagID        String        @id @default(dbgenerated("uuid_generate_v4()")) @map("tag_id") @db.Uuid
+  tag          String        @unique @db.VarChar(50)
+  product_tags ProductTags[]
+
+  @@map("tags")
+}
+
+model Vendors {
+  vendorID String @id @default(dbgenerated("uuid_generate_v4()")) @map("vendor_id") @db.Uuid
+  vendor   String @unique @db.VarChar(50)
+
+  @@map("vendors")
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVE
+
+  @@map("product_status")
+}
