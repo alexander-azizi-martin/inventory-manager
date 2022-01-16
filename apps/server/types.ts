@@ -6,6 +6,14 @@ export interface TagID {
   tagID: string;
 }
 
+export interface ProductTypeID {
+  productTypeID: string;
+}
+
+export interface VendorID {
+  vendorID: string;
+}
+
 export interface ProductRequest {
   title: string;
   description: string;
@@ -22,6 +30,14 @@ export interface ProductRequest {
 
 export interface TagRequest {
   tag: string;
+}
+
+export interface VendorRequest {
+  vendor: string;
+}
+
+export interface ProductTypeRequest {
+  productType: string;
 }
 
 export interface Error {

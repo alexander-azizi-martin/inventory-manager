@@ -17,3 +17,11 @@ export const productSchema = Joi.object({
 export const tagSchema = Joi.object({
   tag: Joi.string().required(),
 });
+
+export const vendorSchema = Joi.object({
+  vendor: Joi.string().required(),
+});
+
+export const productTypeSchema = Joi.object({
+  productType: Joi.string().required(),
+});

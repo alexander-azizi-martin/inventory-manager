@@ -2,12 +2,14 @@ import type { FastifyPluginCallback as Plugin } from 'fastify';
 
 import type { ProductRequest, ProductID } from '~/types';
 import tagRouter from '~/routes/api/products/tags';
+import vendorRouter from '~/routes/api/products/vendors';
+import productTypeRouter from '~/routes/api/products/productTypes';
 import { productSchema } from '~/schemas/product';
 import { validateParamIds, validateBody } from '~/utils/middleware';
 import { NotFoundError } from '~/utils/errors';
 
 const productRouter: Plugin = (app, opts, done) => {
-  app.register(tagRouter);
+  app.register(tagRouter).register(vendorRouter).register(productTypeRouter);
 
   app.get('/', {
     async handler(req, res) {
