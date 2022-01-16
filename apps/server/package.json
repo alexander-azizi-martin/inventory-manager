@@ -1,0 +1,35 @@
+{
+  "name": "@inventory-manager/server",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node dist",
+    "build": "prisma generate --schema ./database/schema.prisma && ttsc",
+    "dev": "tsc-watch --onSuccess \"cross-env NODE_ENV=development node -r dotenv/config dist\" --compiler ttypescript/bin/tsc",
+    "lint": "eslint --ext .ts ."
+  },
+  "dependencies": {
+    "@prisma/client": "^3.8.1",
+    "fastify": "^3.25.3",
+    "fastify-autoload": "^3.10.0",
+    "joi": "^17.5.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.8",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.9.1",
+    "@typescript-eslint/parser": "^5.9.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "^11.0.0",
+    "eslint": "^8.6.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^16.1.0",
+    "eslint-plugin-import": "^2.25.4",
+    "pino-pretty": "^7.3.0",
+    "prisma": "^3.8.1",
+    "tsc-watch": "^4.6.0",
+    "ttypescript": "^1.5.13",
+    "typescript": "^4.5.4",
+    "typescript-transform-paths": "^3.3.1"
+  }
+}

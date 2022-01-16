@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Products {
+  productID        String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  // Product
+  title            String        @db.VarChar(50)
+  description      String?
+  status           ProductStatus @default(DRAFT)
+  // Pricing
+  price            Float         @default(0)
+  cost             Float?
+  // Organization
+  vendorID         String        @db.Uuid
+  productTypeID    String        @db.Uuid
+  vendor           Vendors       @relation(fields: [vendorID], references: [vendorID])
+  productType      ProductTypes? @relation(fields: [productTypeID], references: [productTypeID])
+  // Inventory
+  barcode          String?
+  stockKeepingUnit String?
+  quantity         Int           @default(0)
+  // Meta info
+  createdAt        DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime      @updatedAt @db.Timestamp(6)
+  tags             Tags[]        @relation("ProductTags")
+}
+
+model Tags {
+  tagID    String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tag      String     @unique @db.VarChar(50)
+  products Products[] @relation("ProductTags")
+}
+
+model Vendors {
+  vendorID String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  vendor   String     @unique @db.VarChar(50)
+  products Products[]
+}
+
+model ProductTypes {
+  productTypeID String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  productType   String     @unique @db.VarChar(50)
+  products      Products[]
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVE
+}
