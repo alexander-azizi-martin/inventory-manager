@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "node dist",
-    "build": "ttsc",
+    "build": "prisma generate --schema ./database/schema.prisma && ttsc",
     "dev": "tsc-watch --onSuccess \"cross-env NODE_ENV=development node -r dotenv/config dist\" --compiler ttypescript/bin/tsc",
     "lint": "eslint --ext .ts ."
   },

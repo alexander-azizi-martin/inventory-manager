@@ -5,7 +5,13 @@
   "workspaces": [
     "apps/*"
   ],
+  "scripts": {
+    "build": "yarn workspaces run build"
+  },
   "devDependencies": {
     "prettier": "^2.1.2"
+  },
+  "engines": {
+    "yarn": "1.x"
   }
 }

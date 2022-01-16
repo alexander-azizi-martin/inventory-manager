@@ -6,7 +6,9 @@ const server = createApp({
   logger: isDev ? { prettyPrint: true } : false,
 });
 
-server.listen(process.env.PORT || 3000, (err, address) => {
+const ADDRESS = isDev ? 'localhost' : '0.0.0.0';
+
+server.listen(process.env.PORT || 3000, ADDRESS, (err, address) => {
   if (err) {
     throw err;
   }
