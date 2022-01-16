@@ -1,62 +1,77 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS tags;
-DROP TABLE IF EXISTS product_tags;
-DROP TABLE IF EXISTS vendors;
-DROP TABLE IF EXISTS product_types;
-DROP TYPE IF EXISTS product_status;
+DROP TABLE IF EXISTS "_ProductTags";
+DROP TABLE IF EXISTS "Products";
+DROP TABLE IF EXISTS "Tags";
+DROP TABLE IF EXISTS "Vendors";
+DROP TABLE IF EXISTS "ProductTypes";
+DROP TABLE IF EXISTS "Filters";
+DROP TYPE IF EXISTS "ProductStatus";
 
-CREATE TYPE product_status AS ENUM ('ACTIVE', 'DRAFT', 'ARCHIVE');
+CREATE TYPE "ProductStatus" AS ENUM ('ACTIVE', 'DRAFT', 'ARCHIVE');
 
-CREATE TABLE products (
-  product_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+CREATE TABLE "Vendors" (
+  "vendorID" UUID NOT NULL DEFAULT uuid_generate_v4(),
+  "vendor" VARCHAR(50) UNIQUE NOT NULL,
+
+  PRIMARY KEY ("vendorID")
+);
+
+CREATE TABLE "ProductTypes" (
+  "productTypeID" UUID NOT NULL DEFAULT uuid_generate_v4(),
+  "productType" VARCHAR(50) UNIQUE NOT NULL,
+
+  PRIMARY KEY ("productTypeID")
+);
+
+CREATE TABLE "Products" (
+  "productID" UUID NOT NULL DEFAULT uuid_generate_v4(),
   -- Product
-  title VARCHAR(50) NOT NULL,
-  description TEXT,
-  status product_status NOT NULL DEFAULT 'ARCHIVE',
+  "title" VARCHAR(50) NOT NULL,
+  "description" TEXT,
+  "status" "ProductStatus" NOT NULL DEFAULT 'DRAFT',
   -- Pricing
-  price float NOT NULL DEFAULT 0,
-  cost float,
+  "price" float NOT NULL DEFAULT 0,
+  "cost" float,
   -- Organization
-  vendor VARCHAR(50) NOT NULL,
-  product_type VARCHAR(50),
+  "vendorID" UUID NOT NULL,
+  "productTypeID" UUID NOT NULL,
   -- Inventory
-  barcode TEXT,
-  stock_keeping_unit TEXT,
-  quantity int NOT NULL DEFAULT 0,
+  "barcode" TEXT,
+  "stockKeepingUnit" TEXT,
+  "quantity" int NOT NULL DEFAULT 0,
   -- Meta info
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
 
-  PRIMARY KEY (product_id)
+  PRIMARY KEY ("productID"),
+  FOREIGN KEY ("vendorID") REFERENCES "Vendors" ("vendorID") ON DELETE CASCADE,
+  FOREIGN KEY ("productTypeID") REFERENCES "ProductTypes" ("productTypeID") ON DELETE CASCADE
 );
 
-CREATE TABLE tags (
-  tag_id UUID NOT NULL DEFAULT uuid_generate_v4(),
-  tag VARCHAR(50) UNIQUE NOT NULL,
+CREATE TABLE "Tags" (
+  "tagID" UUID NOT NULL DEFAULT uuid_generate_v4(),
+  "tag" VARCHAR(50) UNIQUE NOT NULL,
 
-  PRIMARY KEY (tag_id)
+  PRIMARY KEY ("tagID")
 );
 
-CREATE TABLE product_tags (
-  product_id UUID NOT NULL,
-  tag_id UUID NOT NULL,
+CREATE TABLE "_ProductTags" (
+  "A" UUID NOT NULL,
+  "B" UUID NOT NULL,
 
-  FOREIGN KEY (product_id) REFERENCES products (product_id) ON DELETE CASCADE,
-  FOREIGN KEY (tag_id) REFERENCES tags (tag_id) ON DELETE CASCADE
+  FOREIGN KEY ("A") REFERENCES "Products" ("productID") ON DELETE CASCADE,
+  FOREIGN KEY ("B") REFERENCES "Tags" ("tagID") ON DELETE CASCADE
 );
 
-CREATE TABLE vendors (
-  vendor_id UUID NOT NULL DEFAULT uuid_generate_v4(),
-  vendor VARCHAR(50) UNIQUE NOT NULL,
+CREATE TABLE "Filters" (
+  "filterID" UUID NOT NULL DEFAULT uuid_generate_v4(),
 
-  PRIMARY KEY (vendor_id)
-);
+  "title" TEXT,
+  "status" "ProductStatus", 
+  "productType" VARCHAR(50),
+  "vendor" VARCHAR(50),
+  "tag" VARCHAR(50),
 
-CREATE TABLE product_types (
-  product_type_id UUID NOT NULL DEFAULT uuid_generate_v4(),
-  product_type VARCHAR(50) UNIQUE NOT NULL,
-
-  PRIMARY KEY (product_type_id)
+  PRIMARY KEY ("filterID")
 );
