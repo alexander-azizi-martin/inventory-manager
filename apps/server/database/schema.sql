@@ -67,7 +67,7 @@ CREATE TABLE "_ProductTags" (
 CREATE TABLE "Filters" (
   "filterID" UUID NOT NULL DEFAULT uuid_generate_v4(),
 
-  "title" TEXT,
+  "title" VARCHAR(50),
   "status" "ProductStatus", 
   "productType" VARCHAR(50),
   "vendor" VARCHAR(50),
