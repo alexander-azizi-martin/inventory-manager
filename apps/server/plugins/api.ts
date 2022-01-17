@@ -1,10 +1,13 @@
 import type { FastifyPluginCallback as Plugin } from 'fastify';
 
-import products from '~/routes/api/products';
+import productRouter from '~/routes/api/products';
+import filterRouter from '~/routes/api/filters';
 import { NotFoundError, ConflictError } from '~/utils/errors';
 
 const apiPlugin: Plugin = async (app, opts, done) => {
-  app.register(products, { prefix: 'products' });
+  app
+    .register(productRouter, { prefix: 'products' })
+    .register(filterRouter, { prefix: 'filters' });
 
   app.setErrorHandler((error, req, res) => {
     if (error.code === 'P2025') {
