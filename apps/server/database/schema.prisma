@@ -54,3 +54,13 @@ enum ProductStatus {
   DRAFT
   ARCHIVE
 }
+
+model Filters {
+  filterID String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  title       String?        @db.VarChar(50)
+  status      ProductStatus?
+  productType String?        @db.VarChar(50)
+  vendor      String?        @db.VarChar(50)
+  tag         String?        @db.VarChar(50)
+}

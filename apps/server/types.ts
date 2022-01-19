@@ -14,6 +14,10 @@ export interface VendorID {
   vendorID: string;
 }
 
+export interface FilterID {
+  filterID: string;
+}
+
 export interface ProductRequest {
   title: string;
   description: string;
@@ -38,6 +42,14 @@ export interface VendorRequest {
 
 export interface ProductTypeRequest {
   productType: string;
+}
+
+export interface FilterRequest {
+  title?: string;
+  status?: 'ACTIVE' | 'DRAFT' | 'ARCHIVE';
+  productType?: string;
+  vendor?: string;
+  tag?: string;
 }
 
 export interface Error {
