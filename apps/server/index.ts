@@ -8,7 +8,7 @@ const server = createApp({
 
 const ADDRESS = isDev ? 'localhost' : '0.0.0.0';
 
-server.listen(process.env.PORT || 3000, ADDRESS, (err, address) => {
+server.listen(process.env.PORT || 5000, ADDRESS, (err, address) => {
   if (err) {
     throw err;
   }

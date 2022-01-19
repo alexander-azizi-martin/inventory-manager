@@ -1,9 +1,12 @@
 import fastify, { FastifyServerOptions } from 'fastify';
-import * as autoLoad from 'fastify-autoload';
+import autoLoad from 'fastify-autoload';
+import fastifyCors from 'fastify-cors';
 import { join } from 'path';
 
 const createApp = (options: FastifyServerOptions) => {
   const app = fastify(options);
+
+  app.register(fastifyCors);
 
   app.register(autoLoad as any, {
     dir: join(__dirname, 'plugins'),
