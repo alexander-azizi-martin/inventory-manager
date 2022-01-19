@@ -6,6 +6,9 @@
     "apps/*"
   ],
   "scripts": {
+    "dev": "start yarn client:start && start yarn server:start",
+    "client:start": "yarn workspace @inventory-manager/client start",
+    "server:start": "yarn workspace @inventory-manager/server start",
     "build": "yarn workspaces run build"
   },
   "devDependencies": {
