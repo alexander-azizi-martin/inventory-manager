@@ -8,13 +8,27 @@ import { productSchema } from '~/schemas/product';
 import { validateParamIds, validateBody } from '~/utils/middleware';
 import { NotFoundError } from '~/utils/errors';
 
+const CSV_HEADERS = [
+  'title',
+  'description',
+  'status',
+  'price',
+  'cost',
+  'vendor',
+  'productType',
+  'barcode',
+  'stockKeepingUnit',
+  'quantity',
+  'tags',
+];
+
 const productRouter: Plugin = (app, opts, done) => {
   app.register(tagRouter).register(vendorRouter).register(productTypeRouter);
 
   app.get('/', {
     async handler(req, res) {
       const products = await app.prisma.products.findMany({
-        include: { tags: true },
+        include: { tags: true, vendor: true, productType: true },
       });
 
       res.send(products);
@@ -54,10 +68,50 @@ const productRouter: Plugin = (app, opts, done) => {
             },
           },
         },
-        include: { tags: true },
+        include: { tags: true, vendor: true, productType: true },
       });
 
       res.code(201).send(createdProduct);
+    },
+  });
+
+  app.get('/export', {
+    async handler(req, res) {
+      const products = await app.prisma.products.findMany({
+        include: { tags: true, vendor: true, productType: true },
+      });
+
+      const rows = products.map((product) => {
+        const row = [];
+
+        for (let header of CSV_HEADERS) {
+          if (header == 'vendor') {
+            row.push((product as any)[header].vendor);
+          } else if (header == 'productType') {
+            row.push((product as any)[header].productType);
+          } else if (header == 'tags') {
+            const tags = (product as any)[header].map(({ tag }: any) => tag);
+
+            row.push(`"${tags.join(',')}"`);
+          } else {
+            row.push((product as any)[header]);
+          }
+        }
+
+        return row;
+      });
+
+      let csvFile = `${CSV_HEADERS.join(',')}\n`;
+      for (let row of rows) {
+        csvFile += `${row.join(',')}\n`;
+      }
+
+      res
+        .headers({
+          'Content-Type': 'text/plain',
+          'Content-Disposition': 'attachment; filename=products.csv',
+        })
+        .send(csvFile);
     },
   });
 
@@ -69,7 +123,7 @@ const productRouter: Plugin = (app, opts, done) => {
 
       const product = await app.prisma.products.findUnique({
         where: { productID },
-        include: { tags: true },
+        include: { tags: true, vendor: true, productType: true },
       });
 
       if (!product) {
@@ -115,7 +169,7 @@ const productRouter: Plugin = (app, opts, done) => {
             },
           },
         },
-        include: { tags: true },
+        include: { tags: true, vendor: true, productType: true },
       });
 
       res.code(201).send(updatedProduct);
