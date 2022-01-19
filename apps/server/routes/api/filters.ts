@@ -3,6 +3,7 @@ import type { FastifyPluginCallback as Plugin } from 'fastify';
 import type { FilterID, FilterRequest } from '~/types';
 import { filterSchema } from '~/schemas/filter';
 import { validateParamIds, validateBody } from '~/utils/middleware';
+import { removeNull } from '~/utils/helpers';
 import { NotFoundError } from '~/utils/errors';
 
 const filterRouter: Plugin = (app, opts, done) => {
@@ -50,23 +51,30 @@ const filterRouter: Plugin = (app, opts, done) => {
     async handler(req, res) {
       const { filterID } = req.params as FilterID;
 
-      const filter = await app.prisma.filters.findUnique({
-        where: { filterID },
-      });
+      const filter = removeNull(
+        await app.prisma.filters.findUnique({
+          where: { filterID },
+        }),
+      );
 
-      const products = await app.prisma.products.findMany({
-        where: {
-          title: { contains: filter?.title || undefined },
-          status: { equals: filter?.status || undefined },
-          vendor: { vendor: { equals: filter?.vendor || undefined } },
-          productType: {
-            productType: { equals: filter?.productType || undefined },
+      if (!filter) {
+        res.send(new NotFoundError('Filter does not exist.'));
+      } else {
+        const products = await app.prisma.products.findMany({
+          where: {
+            title: { contains: filter.title },
+            status: { equals: filter.status },
+            vendor: { vendor: { equals: filter.vendor } },
+            productType: {
+              productType: { equals: filter.productType },
+            },
+            tags: { some: { tag: { contains: filter.tag } } },
           },
-          tags: { some: { tag: { contains: filter?.tag || undefined } } },
-        },
-      });
+          include: { tags: true, vendor: true, productType: true },
+        });
 
-      res.send(products);
+        res.send(products);
+      }
     },
   });
 
@@ -119,6 +127,7 @@ const filterRouter: Plugin = (app, opts, done) => {
           productType: { productType: { equals: productType } },
           tags: { some: { tag: { contains: tag } } },
         },
+        include: { tags: true, vendor: true, productType: true },
       });
 
       res.send(products);
