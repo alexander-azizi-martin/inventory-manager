@@ -26,9 +26,14 @@ export const validateBody: (schema: Schema) => Middleware = (schema) => (
   res,
   next,
 ) => {
-  const { error } = schema.validate(req.body);
+  const { value, error } = schema.validate(req.body, {
+    allowUnknown: false,
+    convert: true,
+  });
 
   if (!error) {
+    req.body = value;
+
     next();
   } else {
     res.send(new UserInputError(error.message));
