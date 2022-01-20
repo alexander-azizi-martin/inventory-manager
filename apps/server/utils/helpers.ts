@@ -4,7 +4,7 @@ export const removeNull: (obj: any) => any = (obj: any) => {
     if (obj[key] == null) {
       obj[key] = undefined;
     } else if (typeof obj[key] == 'object') {
-      removeNull(obj);
+      removeNull(obj[key]);
     }
   }
 };
