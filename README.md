@@ -1,6 +1,8 @@
 # Inventory Manager
 
-This is a full stack web application to track and manage inventory. The application uses Node JS, Fastify, PostgreSQL, and Prisma for the backend, and Next JS, Material UI, and Tailwind CSS for the frontend. Additionally Typescript is used on both the front and backend. The website can be viewed at [shopify-inventory-manager.netlify.app](https://shopify-inventory-manager.netlify.app) and the REST api can be found at [powerful-ridge-88886.herokuapp.com/api](https://powerful-ridge-88886.herokuapp.com/api/). 
+This is a full stack web application to track and manage inventory. The application uses Node JS, Fastify, PostgreSQL, and Prisma for the backend, and Next JS, Material UI, and Tailwind CSS for the frontend. Additionally Typescript is used on both the front and backend. The website can be viewed at [shopify-inventory-manager.netlify.app](https://shopify-inventory-manager.netlify.app). 
+
+> Note the initial load of the website might be a little slow since Heroku puts the server to sleep after 30 minutes of inactivity.
 
 The available endpoints to the REST api can found in `REST.md`.
 
