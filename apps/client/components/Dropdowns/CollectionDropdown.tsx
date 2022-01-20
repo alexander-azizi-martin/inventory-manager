@@ -68,7 +68,7 @@ const CollectionDropdown = ({
         />
         {open && (
           <div className="absolute card w-full z-50">
-            <MenuList className="p-0">
+            <MenuList style={{ padding: 0 }}>
               {value && !options.includes(value) && (
                 <MenuItem onClick={handleSelect(value)}>
                   <Plus size={20} />

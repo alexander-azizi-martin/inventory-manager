@@ -83,7 +83,7 @@ const TagDropdown = ({ selectedTags, onChange }: TagDropdownProps) => {
           />
           {open && (
             <div className="absolute card w-full z-50">
-              <MenuList className="p-0">
+              <MenuList style={{ padding: 0 }}>
                 {textValue && !tags.includes(textValue) && (
                   <MenuItem onClick={handleAddTag(textValue)}>
                     <Plus size={20} />
@@ -97,7 +97,7 @@ const TagDropdown = ({ selectedTags, onChange }: TagDropdownProps) => {
                     <MenuItem key={tag} onClick={handleAddTag(tag)}>
                       <Radio
                         checked={selectedTags.includes(tag)}
-                        className="p-0"
+                        style={{ padding: 0 }}
                       />
                       {tag}
                     </MenuItem>
