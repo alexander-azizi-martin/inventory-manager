@@ -5,7 +5,11 @@ import tagRouter from '~/routes/api/products/tags';
 import vendorRouter from '~/routes/api/products/vendors';
 import productTypeRouter from '~/routes/api/products/productTypes';
 import { productSchema } from '~/schemas/product';
-import { validateParamIds, validateBody } from '~/utils/middleware';
+import {
+  validateParamIds,
+  validateBody,
+  authenticate,
+} from '~/utils/middleware';
 import { NotFoundError } from '~/utils/errors';
 
 const CSV_HEADERS = [
@@ -26,9 +30,14 @@ const productRouter: Plugin = (app, opts, done) => {
   app.register(tagRouter).register(vendorRouter).register(productTypeRouter);
 
   app.get('/', {
+    preValidation: [authenticate()],
+
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
+
       const products = await app.prisma.products.findMany({
-        include: { tags: true, vendor: true, productType: true },
+        where: { userID },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
       res.send(products);
@@ -36,9 +45,10 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(productSchema)],
+    preValidation: [validateBody(productSchema), authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const {
         tags,
         vendor,
@@ -49,26 +59,29 @@ const productRouter: Plugin = (app, opts, done) => {
       const createdProduct = await app.prisma.products.create({
         data: {
           ...product,
-          tags: {
+          Tags: {
             connectOrCreate: tags.map((tag) => ({
-              create: { tag },
-              where: { tag },
+              create: { tag, userID },
+              where: { userID_tag: { userID, tag } },
             })),
           },
-          vendor: {
+          Vendor: {
             connectOrCreate: {
-              create: { vendor },
-              where: { vendor },
+              create: { vendor, userID },
+              where: { userID_vendor: { userID, vendor } },
             },
           },
-          productType: {
+          ProductType: {
             connectOrCreate: {
-              create: { productType },
-              where: { productType },
+              create: { productType, userID },
+              where: { userID_productType: { userID, productType } },
             },
+          },
+          User: {
+            connect: { userID },
           },
         },
-        include: { tags: true, vendor: true, productType: true },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
       res.code(201).send(createdProduct);
@@ -76,20 +89,27 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/export', {
+    preValidation: [authenticate()],
+
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
+
       const products = await app.prisma.products.findMany({
-        include: { tags: true, vendor: true, productType: true },
+        where: { userID },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
       const rows = products.map((product) => {
         const row = [];
 
-        for (let header of CSV_HEADERS) {
-          if (header == 'vendor') {
+        for (let i = 0; i < CSV_HEADERS.length; i += 1) {
+          const header = CSV_HEADERS[i];
+
+          if (header === 'vendor') {
             row.push((product as any)[header].vendor);
-          } else if (header == 'productType') {
+          } else if (header === 'productType') {
             row.push((product as any)[header].productType);
-          } else if (header == 'tags') {
+          } else if (header === 'tags') {
             const tags = (product as any)[header].map(({ tag }: any) => tag);
 
             row.push(`"${tags.join(',')}"`);
@@ -102,8 +122,8 @@ const productRouter: Plugin = (app, opts, done) => {
       });
 
       let csvFile = `${CSV_HEADERS.join(',')}\n`;
-      for (let row of rows) {
-        csvFile += `${row.join(',')}\n`;
+      for (let i = 0; i < rows.length; i += 1) {
+        csvFile += `${rows[i].join(',')}\n`;
       }
 
       res
@@ -116,17 +136,18 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:productID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productID } = req.params as ProductID;
 
       const product = await app.prisma.products.findUnique({
         where: { productID },
-        include: { tags: true, vendor: true, productType: true },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
-      if (!product) {
+      if (!product || product.userID !== userID) {
         res.send(new NotFoundError('Product does not exist.'));
       } else {
         res.send(product);
@@ -135,41 +156,58 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/:productID', {
-    preValidation: [validateParamIds, validateBody(productSchema)],
+    preValidation: [
+      validateParamIds,
+      validateBody(productSchema),
+      authenticate(),
+    ],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productID } = req.params as ProductID;
       const {
         tags,
         vendor,
         productType,
-        ...product
+        ...newProduct
       } = req.body as ProductRequest;
+
+      const product = await app.prisma.products.findUnique({
+        where: { productID },
+      });
+
+      if (!product || product.userID !== userID) {
+        res.send(new NotFoundError('Product does not exist.'));
+        return;
+      }
 
       const updatedProduct = await app.prisma.products.update({
         where: { productID },
         data: {
-          ...product,
-          tags: {
+          ...newProduct,
+          Tags: {
             connectOrCreate: tags.map((tag) => ({
-              create: { tag },
-              where: { tag },
+              create: { tag, userID },
+              where: { userID_tag: { userID, tag } },
             })),
           },
-          vendor: {
+          Vendor: {
             connectOrCreate: {
-              create: { vendor },
-              where: { vendor },
+              create: { vendor, userID },
+              where: { userID_vendor: { userID, vendor } },
             },
           },
-          productType: {
+          ProductType: {
             connectOrCreate: {
-              create: { productType },
-              where: { productType },
+              create: { productType, userID },
+              where: { userID_productType: { userID, productType } },
             },
+          },
+          User: {
+            connect: { userID },
           },
         },
-        include: { tags: true, vendor: true, productType: true },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
       res.code(201).send(updatedProduct);
@@ -177,10 +215,20 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:productID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productID } = req.params as ProductID;
+
+      const product = await app.prisma.products.findUnique({
+        where: { productID },
+      });
+
+      if (!product || product.userID !== userID) {
+        res.send(new NotFoundError('Product does not exist.'));
+        return;
+      }
 
       await app.prisma.products.delete({ where: { productID } });
 

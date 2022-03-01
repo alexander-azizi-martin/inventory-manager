@@ -2,44 +2,57 @@ import type { FastifyPluginCallback as Plugin } from 'fastify';
 
 import type { ProductTypeID, ProductTypeRequest } from '~/types';
 import { productTypeSchema } from '~/schemas/product';
-import { validateParamIds, validateBody } from '~/utils/middleware';
+import {
+  validateParamIds,
+  validateBody,
+  authenticate,
+} from '~/utils/middleware';
 import { NotFoundError } from '~/utils/errors';
 
 const productTypeRouter: Plugin = (app, opts, done) => {
   app.get('/product-types', {
+    preValidation: [authenticate()],
+
     async handler(req, res) {
-      const productTypes = await app.prisma.productTypes.findMany();
+      const { sub: userID } = req.accessToken;
+
+      const productTypes = await app.prisma.productTypes.findMany({
+        where: { userID },
+      });
 
       res.send(productTypes);
     },
   });
 
   app.get('/product-types/:productTypeID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productTypeID } = req.params as ProductTypeID;
 
       const productType = await app.prisma.productTypes.findUnique({
         where: { productTypeID },
       });
 
-      if (!productType) {
+      if (!productType || productType.userID !== userID) {
         res.send(new NotFoundError('Product type does not exist.'));
-      } else {
-        res.send(productType);
+        return;
       }
+
+      res.send(productType);
     },
   });
 
   app.post('/product-types', {
-    preValidation: [validateBody(productTypeSchema)],
+    preValidation: [validateBody(productTypeSchema), authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productType } = req.body as ProductTypeRequest;
 
       const createdProductType = await app.prisma.productTypes.create({
-        data: { productType },
+        data: { productType, userID },
       });
 
       res.code(201).send(createdProductType);
@@ -47,15 +60,29 @@ const productTypeRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/product-types/:productTypeID', {
-    preValidation: [validateParamIds, validateBody(productTypeSchema)],
+    preValidation: [
+      validateParamIds,
+      validateBody(productTypeSchema),
+      authenticate(),
+    ],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productTypeID } = req.params as ProductTypeID;
-      const { productType } = req.body as ProductTypeRequest;
+      const { productType: newProductType } = req.body as ProductTypeRequest;
+
+      const productType = await app.prisma.productTypes.findUnique({
+        where: { productTypeID },
+      });
+
+      if (!productType || productType.userID !== userID) {
+        res.send(new NotFoundError('Product type does not exist.'));
+        return;
+      }
 
       const updatedProductType = await app.prisma.productTypes.update({
         where: { productTypeID },
-        data: { productType },
+        data: { productType: newProductType },
       });
 
       res.code(201).send(updatedProductType);
@@ -63,10 +90,20 @@ const productTypeRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/product-types/:productTypeID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { productTypeID } = req.params as ProductTypeID;
+
+      const productType = await app.prisma.productTypes.findUnique({
+        where: { productTypeID },
+      });
+
+      if (!productType || productType.userID !== userID) {
+        res.send(new NotFoundError('Product type does not exist.'));
+        return;
+      }
 
       await app.prisma.productTypes.delete({ where: { productTypeID } });
 

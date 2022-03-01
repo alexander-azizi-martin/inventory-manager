@@ -61,3 +61,32 @@ export interface Error {
 export interface Params {
   [key: string]: string;
 }
+
+export interface AuthenticateOptions {
+  validateExpiry?: boolean;
+  requireToken?: boolean;
+}
+
+export interface Session {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AccessToken {
+  sub: string;
+  iat: number;
+  exp: number;
+}
+
+export interface RefreshToken {
+  refreshToken: string;
+}
+
+export interface Credentials {
+  username: string;
+  password: string;
+}
+
+export interface Username {
+  username: string;
+}

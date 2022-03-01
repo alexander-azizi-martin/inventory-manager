@@ -2,44 +2,57 @@ import type { FastifyPluginCallback as Plugin } from 'fastify';
 
 import type { VendorID, VendorRequest } from '~/types';
 import { vendorSchema } from '~/schemas/product';
-import { validateParamIds, validateBody } from '~/utils/middleware';
+import {
+  validateParamIds,
+  validateBody,
+  authenticate,
+} from '~/utils/middleware';
 import { NotFoundError } from '~/utils/errors';
 
 const vendorRouter: Plugin = (app, opts, done) => {
   app.get('/vendors', {
+    preValidation: [authenticate()],
+
     async handler(req, res) {
-      const vendorTypes = await app.prisma.vendors.findMany();
+      const { sub: userID } = req.accessToken;
+
+      const vendorTypes = await app.prisma.vendors.findMany({
+        where: { userID },
+      });
 
       res.send(vendorTypes);
     },
   });
 
   app.get('/vendors/:vendorID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { vendorID } = req.params as VendorID;
 
       const vendor = await app.prisma.vendors.findUnique({
         where: { vendorID },
       });
 
-      if (!vendor) {
-        res.send(new NotFoundError('Vendor type does not exist.'));
-      } else {
-        res.send(vendor);
+      if (!vendor || vendor.userID !== userID) {
+        res.send(new NotFoundError('Vendor does not exist.'));
+        return;
       }
+
+      res.send(vendor);
     },
   });
 
   app.post('/vendors', {
-    preValidation: [validateBody(vendorSchema)],
+    preValidation: [validateBody(vendorSchema), authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { vendor } = req.body as VendorRequest;
 
       const createdVendor = await app.prisma.vendors.create({
-        data: { vendor },
+        data: { vendor, userID },
       });
 
       res.code(201).send(createdVendor);
@@ -47,15 +60,29 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/vendors/:vendorID', {
-    preValidation: [validateParamIds, validateBody(vendorSchema)],
+    preValidation: [
+      validateParamIds,
+      validateBody(vendorSchema),
+      authenticate(),
+    ],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { vendorID } = req.params as VendorID;
-      const { vendor } = req.body as VendorRequest;
+      const { vendor: newVendor } = req.body as VendorRequest;
+
+      const vendor = await app.prisma.vendors.findUnique({
+        where: { vendorID },
+      });
+
+      if (!vendor || vendor.userID !== userID) {
+        res.send(new NotFoundError('Vendor does not exist.'));
+        return;
+      }
 
       const updatedVendor = await app.prisma.vendors.update({
         where: { vendorID },
-        data: { vendor },
+        data: { vendor: newVendor },
       });
 
       res.code(201).send(updatedVendor);
@@ -63,10 +90,20 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/vendors/:vendorID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { vendorID } = req.params as VendorID;
+
+      const vendor = await app.prisma.vendors.findUnique({
+        where: { vendorID },
+      });
+
+      if (!vendor || vendor.userID !== userID) {
+        res.send(new NotFoundError('Vendor does not exist.'));
+        return;
+      }
 
       await app.prisma.vendors.delete({ where: { vendorID } });
 

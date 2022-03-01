@@ -1,11 +1,41 @@
 import type { FastifyPluginCallback as Plugin } from 'fastify';
+import jwt from 'jwt-simple';
+import ms from 'ms';
 
+import type { Session } from '~/types';
+import userRouter from '~/routes/api/users';
+import sessionRouter from '~/routes/api/sessions';
 import productRouter from '~/routes/api/products';
 import filterRouter from '~/routes/api/filters';
 import { NotFoundError, ConflictError } from '~/utils/errors';
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    generateSession: (userId: string) => Promise<Session>;
+  }
+}
+
 const apiPlugin: Plugin = async (app, opts, done) => {
+  app.decorate('generateSession', async (userID: string) => {
+    const { refreshToken } = await app.prisma.sessions.create({
+      data: { userID },
+    });
+
+    const accessToken = jwt.encode(
+      {
+        sub: userID,
+        iat: Date.now(),
+        exp: Date.now() + ms('5 minutes'),
+      },
+      process.env.SECRET as string,
+    );
+
+    return { refreshToken, accessToken };
+  });
+
   app
+    .register(userRouter, { prefix: 'users' })
+    .register(sessionRouter, { prefix: 'sessions' })
     .register(productRouter, { prefix: 'products' })
     .register(filterRouter, { prefix: 'filters' });
 

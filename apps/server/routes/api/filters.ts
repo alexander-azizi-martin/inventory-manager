@@ -2,25 +2,49 @@ import type { FastifyPluginCallback as Plugin } from 'fastify';
 
 import type { FilterID, FilterRequest } from '~/types';
 import { filterSchema } from '~/schemas/filter';
-import { validateParamIds, validateBody } from '~/utils/middleware';
+import {
+  authenticate,
+  validateParamIds,
+  validateBody,
+} from '~/utils/middleware';
 import { removeNull } from '~/utils/helpers';
 import { NotFoundError } from '~/utils/errors';
 
 const filterRouter: Plugin = (app, opts, done) => {
   app.get('/', {
+    preValidation: [authenticate()],
+
     async handler(req, res) {
-      const filters = await app.prisma.filters.findMany({});
+      const { sub: userID } = req.accessToken;
+
+      const filters = await app.prisma.filters.findMany({ where: { userID } });
 
       res.send(filters);
     },
   });
 
   app.post('/', {
-    preValidation: [validateBody(filterSchema)],
+    preValidation: [validateBody(filterSchema), authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
+      const {
+        title,
+        status,
+        tag,
+        vendor,
+        productType,
+      } = req.body as FilterRequest;
+
       const createdFilter = await app.prisma.filters.create({
-        data: req.body as FilterRequest,
+        data: {
+          title,
+          status,
+          tag,
+          vendor,
+          productType,
+          userID,
+        },
       });
 
       res.send(createdFilter);
@@ -28,27 +52,30 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:filterID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { filterID } = req.params as FilterID;
 
       const filter = await app.prisma.filters.findUnique({
         where: { filterID },
       });
 
-      if (!filter) {
+      if (!filter || filter.userID !== userID) {
         res.send(new NotFoundError('Filter does not exist.'));
-      } else {
-        res.code(201).send(filter);
+        return;
       }
+
+      res.code(201).send(filter);
     },
   });
 
   app.get('/:filterID/products', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { filterID } = req.params as FilterID;
 
       const filter = removeNull(
@@ -57,32 +84,55 @@ const filterRouter: Plugin = (app, opts, done) => {
         }),
       );
 
-      if (!filter) {
+      if (!filter || filter.userID !== userID) {
         res.send(new NotFoundError('Filter does not exist.'));
-      } else {
-        const products = await app.prisma.products.findMany({
-          where: {
-            title: { contains: filter.title },
-            status: { equals: filter.status },
-            vendor: { vendor: { equals: filter.vendor } },
-            productType: {
-              productType: { equals: filter.productType },
-            },
-            tags: { some: { tag: { contains: filter.tag } } },
-          },
-          include: { tags: true, vendor: true, productType: true },
-        });
-
-        res.send(products);
+        return;
       }
+
+      const products = await app.prisma.products.findMany({
+        where: {
+          title: {
+            contains: filter.title,
+          },
+          status: {
+            equals: filter.status,
+          },
+          Vendor: {
+            vendor: { equals: filter.vendor },
+          },
+          ProductType: {
+            productType: { equals: filter.productType },
+          },
+          Tags: {
+            some: { tag: { contains: filter.tag } },
+          },
+        },
+        include: { Tags: true, Vendor: true, ProductType: true },
+      });
+
+      res.send(products);
     },
   });
 
   app.put('/:filterID', {
-    preValidation: [validateParamIds, validateBody(filterSchema)],
+    preValidation: [
+      validateParamIds,
+      validateBody(filterSchema),
+      authenticate(),
+    ],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { filterID } = req.params as FilterID;
+
+      const filter = await app.prisma.filters.findUnique({
+        where: { filterID },
+      });
+
+      if (!filter || filter.userID !== userID) {
+        res.send(new NotFoundError('Filter does not exist.'));
+        return;
+      }
 
       const updatedFilter = await app.prisma.filters.update({
         where: { filterID },
@@ -94,10 +144,20 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:filterID', {
-    preValidation: [validateParamIds],
+    preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const { filterID } = req.params as FilterID;
+
+      const filter = await app.prisma.filters.findUnique({
+        where: { filterID },
+      });
+
+      if (!filter || filter.userID !== userID) {
+        res.send(new NotFoundError('Filter does not exist.'));
+        return;
+      }
 
       await app.prisma.filters.delete({
         where: { filterID },
@@ -108,9 +168,10 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/query/products', {
-    preValidation: [validateBody(filterSchema)],
+    preValidation: [validateBody(filterSchema), authenticate()],
 
     async handler(req, res) {
+      const { sub: userID } = req.accessToken;
       const {
         title,
         status,
@@ -121,13 +182,24 @@ const filterRouter: Plugin = (app, opts, done) => {
 
       const products = await app.prisma.products.findMany({
         where: {
-          title: { contains: title },
-          status: { equals: status },
-          vendor: { vendor: { equals: vendor } },
-          productType: { productType: { equals: productType } },
-          tags: { some: { tag: { contains: tag } } },
+          title: {
+            contains: title,
+          },
+          status: {
+            equals: status,
+          },
+          Vendor: {
+            vendor: { equals: vendor },
+          },
+          ProductType: {
+            productType: { equals: productType },
+          },
+          Tags: {
+            some: { tag: { contains: tag } },
+          },
+          userID,
         },
-        include: { tags: true, vendor: true, productType: true },
+        include: { Tags: true, Vendor: true, ProductType: true },
       });
 
       res.send(products);
