@@ -6,6 +6,9 @@ import type { Session } from '~/types';
 import userRouter from '~/routes/api/users';
 import sessionRouter from '~/routes/api/sessions';
 import productRouter from '~/routes/api/products';
+import tagRouter from '~/routes/api/tags';
+import vendorRouter from '~/routes/api/vendors';
+import productTypeRouter from '~/routes/api/productTypes';
 import filterRouter from '~/routes/api/filters';
 import { NotFoundError, ConflictError } from '~/utils/errors';
 
@@ -37,6 +40,9 @@ const apiPlugin: Plugin = async (app, opts, done) => {
     .register(userRouter, { prefix: 'users' })
     .register(sessionRouter, { prefix: 'sessions' })
     .register(productRouter, { prefix: 'products' })
+    .register(tagRouter, { prefix: 'tags' })
+    .register(vendorRouter, { prefix: 'vendors' })
+    .register(productTypeRouter, { prefix: 'product-types' })
     .register(filterRouter, { prefix: 'filters' });
 
   app.setErrorHandler((error, req, res) => {

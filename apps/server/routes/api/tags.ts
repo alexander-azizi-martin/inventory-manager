@@ -10,7 +10,7 @@ import {
 import { NotFoundError } from '~/utils/errors';
 
 const tagRouter: Plugin = (app, opts, done) => {
-  app.get('/tags', {
+  app.get('/', {
     preValidation: [authenticate()],
 
     async handler(req, res) {
@@ -45,7 +45,7 @@ const tagRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.get('/tags/:tagID', {
+  app.get('/:tagID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
@@ -63,7 +63,7 @@ const tagRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.post('/tags', {
+  app.post('/', {
     preValidation: [validateBody(tagSchema), authenticate()],
 
     async handler(req, res) {
@@ -78,7 +78,7 @@ const tagRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.put('/tags/:tagID', {
+  app.put('/:tagID', {
     preValidation: [validateParamIds, validateBody(tagSchema), authenticate()],
 
     async handler(req, res) {
@@ -104,7 +104,7 @@ const tagRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.delete('/tags/:tagID', {
+  app.delete('/:tagID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {

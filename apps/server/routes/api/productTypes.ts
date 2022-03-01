@@ -10,7 +10,7 @@ import {
 import { NotFoundError } from '~/utils/errors';
 
 const productTypeRouter: Plugin = (app, opts, done) => {
-  app.get('/product-types', {
+  app.get('/', {
     preValidation: [authenticate()],
 
     async handler(req, res) {
@@ -24,7 +24,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.get('/product-types/:productTypeID', {
+  app.get('/:productTypeID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
@@ -44,7 +44,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.post('/product-types', {
+  app.post('/', {
     preValidation: [validateBody(productTypeSchema), authenticate()],
 
     async handler(req, res) {
@@ -59,7 +59,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.put('/product-types/:productTypeID', {
+  app.put('/:productTypeID', {
     preValidation: [
       validateParamIds,
       validateBody(productTypeSchema),
@@ -89,7 +89,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.delete('/product-types/:productTypeID', {
+  app.delete('/:productTypeID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {

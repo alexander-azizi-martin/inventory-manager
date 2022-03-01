@@ -10,7 +10,7 @@ import {
 import { NotFoundError } from '~/utils/errors';
 
 const vendorRouter: Plugin = (app, opts, done) => {
-  app.get('/vendors', {
+  app.get('/', {
     preValidation: [authenticate()],
 
     async handler(req, res) {
@@ -24,7 +24,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.get('/vendors/:vendorID', {
+  app.get('/:vendorID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
@@ -44,7 +44,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.post('/vendors', {
+  app.post('/', {
     preValidation: [validateBody(vendorSchema), authenticate()],
 
     async handler(req, res) {
@@ -59,7 +59,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.put('/vendors/:vendorID', {
+  app.put('/:vendorID', {
     preValidation: [
       validateParamIds,
       validateBody(vendorSchema),
@@ -89,7 +89,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
     },
   });
 
-  app.delete('/vendors/:vendorID', {
+  app.delete('/:vendorID', {
     preValidation: [validateParamIds, authenticate()],
 
     async handler(req, res) {
