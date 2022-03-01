@@ -22,18 +22,20 @@ model Products {
   quantity         Int           @default(0)
   createdAt        DateTime      @default(now()) @db.Timestamp(6)
   updatedAt        DateTime      @default(now()) @updatedAt @db.Timestamp(6)
-  productType      ProductTypes  @relation(fields: [productTypeID], references: [productTypeID], onDelete: Cascade, onUpdate: NoAction)
-  user             Users         @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
-  vendor           Vendors       @relation(fields: [vendorID], references: [vendorID], onDelete: Cascade, onUpdate: NoAction)
-  tags             Tags[]        @relation("ProductTags")
+  ProductType      ProductTypes  @relation(fields: [productTypeID], references: [productTypeID], onDelete: Cascade, onUpdate: NoAction)
+  User             Users         @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
+  Vendor           Vendors       @relation(fields: [vendorID], references: [vendorID], onDelete: Cascade, onUpdate: NoAction)
+  Tags             Tags[]        @relation("ProductTags")
 }
 
 model Tags {
-  userID      String @db.Uuid
-  tagID       String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  tag         String @unique @db.VarChar(50)
-  user        Users  @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
-  products Products[] @relation("ProductTags")
+  userID   String     @db.Uuid
+  tagID    String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tag      String     @unique @db.VarChar(50)
+  User     Users      @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
+  Products Products[] @relation("ProductTags")
+
+  @@unique([userID, tag])
 }
 
 model Vendors {
@@ -41,15 +43,19 @@ model Vendors {
   vendorID String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   vendor   String     @unique @db.VarChar(50)
   User     Users      @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
-  products Products[]
+  Products Products[]
+
+  @@unique([userID, vendor])
 }
 
 model ProductTypes {
   userID        String     @db.Uuid
   productTypeID String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   productType   String     @unique @db.VarChar(50)
-  user          Users      @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
-  products      Products[]
+  User          Users      @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
+  Products      Products[]
+
+  @@unique([userID, productType])
 }
 
 model Filters {
@@ -60,14 +66,14 @@ model Filters {
   productType String?        @db.VarChar(50)
   vendor      String?        @db.VarChar(50)
   tag         String?        @db.VarChar(50)
-  user        Users          @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
+  User        Users          @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model Sessions {
   userID       String   @db.Uuid
   refreshToken String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   expiration   DateTime @default(dbgenerated("(now() + '1 year'::interval)")) @db.Timestamp(6)
-  user         Users    @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
+  User         Users    @relation(fields: [userID], references: [userID], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model Users {
@@ -75,12 +81,12 @@ model Users {
   username     String         @unique @db.VarChar(20)
   password     String         @db.Char(60)
   createdAt    DateTime       @default(now()) @db.Timestamp(6)
-  filters      Filters[]
-  productTypes ProductTypes[]
-  products     Products[]
-  sessions     Sessions[]
-  tags         Tags[]
-  vendors      Vendors[]
+  Filters      Filters[]
+  ProductTypes ProductTypes[]
+  Products     Products[]
+  Sessions     Sessions[]
+  Tags         Tags[]
+  Vendors      Vendors[]
 }
 
 enum ProductStatus {

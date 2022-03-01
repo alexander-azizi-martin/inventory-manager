@@ -31,7 +31,8 @@ CREATE TABLE "Sessions" (
 CREATE TABLE "Vendors" (
   "userID" UUID NOT NULL,
   "vendorID" UUID NOT NULL DEFAULT uuid_generate_v4(),
-  "vendor" VARCHAR(50) UNIQUE NOT NULL,
+  "vendor" VARCHAR(50) NOT NULL,
+  UNIQUE ("userID", "vendor"),
   PRIMARY KEY ("vendorID"),
   FOREIGN KEY ("userID") REFERENCES "Users" ("userID") ON DELETE CASCADE
 );
@@ -39,7 +40,8 @@ CREATE TABLE "Vendors" (
 CREATE TABLE "ProductTypes" (
   "userID" UUID NOT NULL,
   "productTypeID" UUID NOT NULL DEFAULT uuid_generate_v4(),
-  "productType" VARCHAR(50) UNIQUE NOT NULL,
+  "productType" VARCHAR(50) NOT NULL,
+  UNIQUE ("userID", "productType"),
   PRIMARY KEY ("productTypeID"),
   FOREIGN KEY ("userID") REFERENCES "Users" ("userID") ON DELETE CASCADE
 );
@@ -73,7 +75,8 @@ CREATE TABLE "Products" (
 CREATE TABLE "Tags" (
   "userID" UUID NOT NULL,
   "tagID" UUID NOT NULL DEFAULT uuid_generate_v4(),
-  "tag" VARCHAR(50) UNIQUE NOT NULL,
+  "tag" VARCHAR(50) NOT NULL,
+  UNIQUE ("userID", "tag"),
   PRIMARY KEY ("tagID"),
   FOREIGN KEY ("userID") REFERENCES "Users" ("userID") ON DELETE CASCADE
 );
