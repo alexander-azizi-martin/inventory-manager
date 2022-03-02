@@ -1,5 +1,5 @@
 import type { FastifyPluginCallback as Plugin } from 'fastify';
-import jwt from 'jwt-simple';
+import jwt from 'jsonwebtoken';
 import ms from 'ms';
 
 import type { Session } from '~/types';
@@ -24,7 +24,7 @@ const apiPlugin: Plugin = async (app, opts, done) => {
       data: { userID },
     });
 
-    const accessToken = jwt.encode(
+    const accessToken = jwt.sign(
       {
         sub: userID,
         iat: Date.now(),

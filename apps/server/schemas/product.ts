@@ -1,9 +1,9 @@
 import Joi from 'joi';
 
-const stringFiftySchema = Joi.string().max(50).required();
+const stringFiftySchema = Joi.string().max(50);
 
 export const productSchema = Joi.object({
-  title: stringFiftySchema,
+  title: stringFiftySchema.required(),
 
   description: Joi.string().allow(''),
 
@@ -13,9 +13,9 @@ export const productSchema = Joi.object({
 
   cost: Joi.number().min(0),
 
-  vendor: stringFiftySchema,
+  vendor: stringFiftySchema.required(),
 
-  productType: stringFiftySchema,
+  productType: stringFiftySchema.required(),
 
   barcode: Joi.string().allow(''),
 
@@ -27,11 +27,11 @@ export const productSchema = Joi.object({
 });
 
 export const tagSchema = Joi.object({
-  tag: stringFiftySchema,
+  tag: stringFiftySchema.required(),
 });
 
 export const vendorSchema = Joi.object({
-  vendor: stringFiftySchema,
+  vendor: stringFiftySchema.required(),
 });
 
 export const productTypeSchema = Joi.object({

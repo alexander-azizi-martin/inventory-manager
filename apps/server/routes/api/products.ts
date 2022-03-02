@@ -101,11 +101,11 @@ const productRouter: Plugin = (app, opts, done) => {
           const header = CSV_HEADERS[i];
 
           if (header === 'vendor') {
-            row.push((product as any)[header].vendor);
+            row.push(product.Vendor.vendor);
           } else if (header === 'productType') {
-            row.push((product as any)[header].productType);
+            row.push(product.ProductType.productType);
           } else if (header === 'tags') {
-            const tags = (product as any)[header].map(({ tag }: any) => tag);
+            const tags = product.Tags.map(({ tag }) => tag);
 
             row.push(`"${tags.join(',')}"`);
           } else {
@@ -144,9 +144,10 @@ const productRouter: Plugin = (app, opts, done) => {
 
       if (!product || product.userID !== userID) {
         res.send(new NotFoundError('Product does not exist.'));
-      } else {
-        res.send(product);
+        return;
       }
+
+      res.send(product);
     },
   });
 
@@ -175,6 +176,10 @@ const productRouter: Plugin = (app, opts, done) => {
         res.send(new NotFoundError('Product does not exist.'));
         return;
       }
+
+      await app.prisma.$queryRaw`
+        DELETE FROM "_ProductTags" WHERE "A"=${productID};
+      `;
 
       const updatedProduct = await app.prisma.products.update({
         where: { productID },
