@@ -8,7 +8,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { Plus } from 'react-feather';
 import useSWR from 'swr';
 
-import api from '~/utils/api';
+import { api, useRequest } from '~/utils/api';
 
 interface CollectionDropdownProps {
   title: string;
@@ -28,13 +28,18 @@ const CollectionDropdown = ({
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
 
-  useEffect(() => {
-    api.request.get(collection).then((res) => {
-      const data = res.data.map((item: any) => item[id]);
+  const { data } = useSWR(
+    collection,
+    useRequest(() => api.get(collection)),
+  );
 
-      setOptions(data);
-    });
-  }, []);
+  useEffect(() => {
+    if (data) {
+      const options = data.map((item: any) => item[id]);
+
+      setOptions(options);
+    }
+  }, [data]);
 
   const handleSelect = (option: string) => () => {
     if (!options.includes(option)) {

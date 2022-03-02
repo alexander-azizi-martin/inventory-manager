@@ -7,9 +7,9 @@ import Chip from '@mui/material/Chip';
 import Radio from '@mui/material/Radio';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Plus, X as Close } from 'react-feather';
-import swr from 'swr';
+import useSWR from 'swr';
 
-import api from '~/utils/api';
+import { api, useRequest } from '~/utils/api';
 
 interface TagDropdownProps {
   selectedTags: string[];
@@ -22,14 +22,19 @@ const TagDropdown = ({ selectedTags, onChange }: TagDropdownProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [initialTags, setInitialTags] = useState<string[]>([]);
 
-  useEffect(() => {
-    api.request.get('/api/products/tags').then((res) => {
-      const data = res.data.map((item: any) => item['tag']);
+  const { data } = useSWR(
+    '/api/tags',
+    useRequest(() => api.get('/api/tags')),
+  );
 
-      setTags(data);
-      setInitialTags(data);
-    });
-  }, []);
+  useEffect(() => {
+    if (data) {
+      const tags = data.map((item: any) => item['tag']);
+
+      setTags(tags);
+      setInitialTags(tags);
+    }
+  }, [data]);
 
   const handleAddTag = (tag: string) => () => {
     if (selectedTags.includes(tag)) {

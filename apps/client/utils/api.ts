@@ -1,53 +1,70 @@
-import axios from 'axios';
-import { useSWRConfig } from 'swr';
-import type { ProductForm } from '~/types';
+import axios, { AxiosResponse, AxiosError, Axios } from 'axios';
+import jwt from 'jsonwebtoken';
+
+import type { ProductForm, AccessToken, Session } from '~/types';
+import useSession from '~/utils/useSession';
 
 const isDev = process.env.NODE_ENV == 'development';
-const baseURL = isDev ? 'http://localhost:5000' : '';
 
-const request = axios.create({
-  baseURL: baseURL,
+export const apiURL = isDev ? 'http://localhost:5000' : '';
+
+export const api = axios.create({
+  baseURL: apiURL,
 });
 
-const exportProducts = async () => {
-  await request.get('/api/products/export');
-};
+api.interceptors.request.use(async (config) => {
+  const { accessToken } = useSession.getState();
 
-const getProducts = async () => {
-  const { data } = await request.get('/api/products');
+  if (accessToken) {
+    config.headers = { Authorization: `bearer ${accessToken}` };
+  }
 
-  return data;
-};
+  return config;
+});
 
-const getProduct = async (productID: string) => {
-  const { data } = await request.get(`/api/products/${productID}`);
+let refreshSession: null | Promise<Session> = null;
 
-  return data;
-};
+export const useRequest = (makeRequest: () => Promise<AxiosResponse>) => {
+  return async () => {
+    try {
+      // Tries to make request
+      const { data } = await makeRequest();
+      return data;
+    } catch (error) {
+      const { refreshToken, setSession, deleteSession } = useSession.getState();
 
-const createProduct = async (product: ProductForm) => {
-  const { data } = await request.post(`/api/products`, product);
+      if ((error as AxiosError)?.response?.status === 401 && refreshToken) {
+        try {
+          // Checks if the session is already being updated
+          if (!refreshSession) {
+            // Tries to update session
+            refreshSession = new Promise(async (resolve, reject) => {
+              try {
+                const {
+                  data: newSession,
+                } = await api.post('/api/sessions/refresh', { refreshToken });
+  
+                setSession(newSession);
+  
+                resolve(newSession);
+              } catch (error) {
+                reject();
+              }
+            });
+          }
 
-  return data;
-};
+          await refreshSession;
+          refreshSession = null;
 
-const updatedProduct = async (productID: string, product: ProductForm) => {
-  const { data } = await request.put(`/api/products/${productID}`, product);
-
-  return data;
-};
-
-const deleteProduct = async (productID: string) => {
-  await request.delete(`/api/products/${productID}`);
-};
-
-export default {
-  baseURL,
-  request,
-  exportProducts,
-  getProducts,
-  getProduct,
-  createProduct,
-  updatedProduct,
-  deleteProduct,
+          // Remakes request
+          const { data } = await makeRequest();
+          return data;
+        } catch (error) {
+          deleteSession();
+        }
+      } else {
+        throw error;
+      }
+    }
+  };
 };

@@ -10,9 +10,9 @@ export interface Product {
   barcode: string | null;
   stockKeepingUnit: string | null;
   quantity: number;
-  tags: Tag[];
-  vendor: Vendor;
-  productType: ProductType;
+  Tags: Tag[];
+  Vendor: Vendor;
+  ProductType: ProductType;
 }
 
 export interface ProductType {
@@ -43,4 +43,15 @@ export interface ProductForm {
   vendor: string;
   productType: string;
   tags: string[];
+}
+
+export interface Session {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AccessToken {
+  sub: string;
+  iat: number;
+  exp: number;
 }

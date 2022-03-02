@@ -6,13 +6,14 @@ export const parseProduct: ParseProductType = (product) => {
   const parsedProduct: ProductForm = {} as ProductForm;
 
   for (let key in product) {
-    if (key == 'vendor') {
-      parsedProduct[key] = product.vendor.vendor;
-    } else if (key == 'productType') {
-      parsedProduct[key] = product.productType.productType;
-    } else if (key == 'tags') {
-      parsedProduct[key] = product.tags.map(({ tag }) => tag);
+    if (key == 'Vendor') {
+      parsedProduct['vendor'] = product.Vendor.vendor;
+    } else if (key == 'ProductType') {
+      parsedProduct['productType'] = product.ProductType.productType;
+    } else if (key == 'Tags') {
+      parsedProduct['tags'] = product.Tags.map(({ tag }) => tag);
     } else if (
+      key != 'userID' &&
       key != 'productID' &&
       key != 'vendorID' &&
       key != 'productTypeID' &&

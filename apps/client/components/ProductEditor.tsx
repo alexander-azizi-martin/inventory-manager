@@ -17,8 +17,8 @@ import deepEqual from 'deep-equal';
 
 import type { Product, ProductForm } from '~/types';
 import { parseProduct } from '~/utils/helpers';
-import api from '~/utils/api';
-import useAlert from '~/utils/useError';
+import { api, useRequest } from '~/utils/api';
+import useAlert from '~/utils/useAlert';
 import CollectionDropdown from '~/components/Dropdowns/CollectionDropdown';
 import TagDropdown from '~/components/Dropdowns/TagDropdown';
 
@@ -49,10 +49,9 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
   const [error, setError] = useAlert();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async () => {      
       try {
-        const { data } = await api.request.get(`/api/products/${productID}`);
-
+        const data = await useRequest(() => api.get(`/api/products/${productID}`))();
         const parsedProduct = parseProduct(data);
 
         setLoading(false);
@@ -61,7 +60,7 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
       } catch {}
     };
 
-    if (productID != 'new') {
+    if (productID !== 'new') {
       fetchData();
     }
   }, []);
@@ -71,9 +70,9 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
       setLoading(true);
 
       if (productID == 'new') {
-        await api.createProduct(productFormData);
+        await useRequest(() => api.post('/api/products', productFormData))();
       } else {
-        await api.updatedProduct(productID, productFormData);
+        await useRequest(() => api.put(`/api/products/${productID}`, productFormData))();
       }
 
       router.push('/');
@@ -90,7 +89,7 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
       if (confirmation) {
         setLoading(true);
 
-        await api.deleteProduct(productID);
+        await useRequest(() => api.delete(`/api/products/${productID}`))();
 
         router.push('/');
       }
@@ -307,7 +306,7 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
               <CollectionDropdown
                 title="Vendors"
                 id="vendor"
-                collection="/api/products/vendors"
+                collection="/api/vendors"
                 value={productFormData.vendor}
                 onChange={(newValue) => {
                   setProductFormData({
@@ -319,7 +318,7 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
               <CollectionDropdown
                 title="Product Types"
                 id="productType"
-                collection="/api/products/product-types"
+                collection="/api/product-types"
                 value={productFormData.productType}
                 onChange={(newValue) => {
                   setProductFormData({
