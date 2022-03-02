@@ -42,10 +42,9 @@ const RouteGuard = ({ children }: RouteGuardProps) => {
     }
   }
 
-  if (authorized)
-    return children;
+  if (authorized) return <>{children}</>;
 
-  return <></>
+  return <></>;
 };
 
 export default RouteGuard;

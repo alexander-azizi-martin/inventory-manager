@@ -112,8 +112,8 @@ const Login: NextPage = () => {
             <Button variant="outlined" onClick={handleSubmit}>
               Login
             </Button>
-            <Link href="/signup">
-              <Button variant="text">Sign Up</Button>
+            <Link href="/signup" passHref>
+              <Button component="a" variant="text">Sign Up</Button>
             </Link>
           </div>
         </Stack>

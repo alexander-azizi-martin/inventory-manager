@@ -39,7 +39,7 @@ const CollectionDropdown = ({
 
       setOptions(options);
     }
-  }, [data]);
+  }, [data, id]);
 
   const handleSelect = (option: string) => () => {
     if (!options.includes(option)) {

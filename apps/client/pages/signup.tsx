@@ -128,8 +128,8 @@ const Signup: NextPage = () => {
             <Button variant="outlined" onClick={handleSubmit}>
               Sign Up
             </Button>
-            <Link href="/login">
-              <Button variant="text">Login</Button>
+            <Link href="/login" passHref>
+              <Button component="a" variant="text">Login</Button>
             </Link>
           </div>
         </Stack>

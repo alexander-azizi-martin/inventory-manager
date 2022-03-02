@@ -63,7 +63,7 @@ const ProductEditor = ({ productID }: ProductEditorProps) => {
     if (productID !== 'new') {
       fetchData();
     }
-  }, []);
+  }, [productID]);
 
   const handleSave = async () => {
     try {
