@@ -8,14 +8,8 @@ const server = createApp({
 
 const ADDRESS = isDev ? 'localhost' : '0.0.0.0';
 
-server.listen(process.env.PORT || 5000, ADDRESS, (err, address) => {
-  if (err) {
-    throw err;
-  }
+server.listen(process.env.PORT || 5000, ADDRESS);
 
-  server.log.info(`server listening on ${address}`);
-});
-
-process.on('exit', () => {
-  server.close();
+process.on('exit', async () => {
+  await server.close();
 });
