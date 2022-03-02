@@ -11,7 +11,7 @@ import { NotFoundError } from '~/utils/errors';
 
 const vendorRouter: Plugin = (app, opts, done) => {
   app.get('/', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -25,7 +25,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:vendorID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -45,7 +45,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(vendorSchema), authenticate()],
+    preValidation: [validateBody(vendorSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -60,11 +60,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/:vendorID', {
-    preValidation: [
-      validateParamIds,
-      validateBody(vendorSchema),
-      authenticate(),
-    ],
+    preValidation: [validateParamIds, validateBody(vendorSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -90,7 +86,7 @@ const vendorRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:vendorID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;

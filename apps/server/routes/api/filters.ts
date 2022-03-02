@@ -12,7 +12,7 @@ import { NotFoundError } from '~/utils/errors';
 
 const filterRouter: Plugin = (app, opts, done) => {
   app.get('/', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -24,7 +24,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(filterSchema), authenticate()],
+    preValidation: [validateBody(filterSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -52,7 +52,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:filterID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -72,7 +72,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:filterID/products', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -115,11 +115,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/:filterID', {
-    preValidation: [
-      validateParamIds,
-      validateBody(filterSchema),
-      authenticate(),
-    ],
+    preValidation: [validateParamIds, validateBody(filterSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -144,7 +140,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:filterID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -168,7 +164,7 @@ const filterRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/query/products', {
-    preValidation: [validateBody(filterSchema), authenticate()],
+    preValidation: [validateBody(filterSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;

@@ -59,7 +59,7 @@ const userRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/me', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, rep) {
       const { sub: userID } = req.accessToken;
@@ -79,7 +79,7 @@ const userRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:username', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, rep) {
       const { username } = req.params as Username;
@@ -94,9 +94,7 @@ const userRouter: Plugin = (app, opts, done) => {
         }
 
         if (username !== user.username) {
-          rep.send(
-            new AuthenticationError('Unauthorized to delete this user'),
-          );
+          rep.send(new AuthenticationError('Unauthorized to delete this user'));
           return;
         }
 

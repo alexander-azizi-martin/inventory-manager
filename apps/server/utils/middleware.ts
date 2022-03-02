@@ -1,7 +1,7 @@
 import type { preHandlerHookHandler as Middleware } from 'fastify';
 import type { Schema } from 'joi';
 import * as uuid from 'uuid';
-import jwt from 'jwt-simple';
+import jwt from 'jsonwebtoken';
 
 import type { AccessToken, Params, AuthenticateOptions } from '~/types';
 import { UserInputError, AuthenticationError } from '~/utils/errors';
@@ -24,7 +24,7 @@ export const validateParamIds: Middleware = (req, res, next) => {
   if (validIDs) {
     next();
   } else {
-    res.send(new UserInputError('IDs provided is not valid.'));
+    res.send(new UserInputError('IDs provided are not valid.'));
   }
 };
 
@@ -47,45 +47,38 @@ export const validateBody: (schema: Schema) => Middleware = (schema) => (
   }
 };
 
-type Authenticate = (options?: AuthenticateOptions) => Middleware;
+export const authenticate: Middleware = (request, reply, next) => {
+  const { authorization } = request.headers;
+  request.accessToken = null as any;
 
-export const authenticate: Authenticate = (options) => {
-  // Default options
-  if (!options) {
-    options = { requireToken: true, validateExpiry: true };
-  }
+  if (authorization) {
+    const [schema, token] = authorization.split(' ');
 
-  return (request, reply, next) => {
-    const { authorization } = request.headers;
-    request.accessToken = null as any;
+    if (schema.toLowerCase() === 'bearer' && token) {
+      try {
+        const decodedToken = jwt.verify(token, process.env.SECRET as string, {
+          ignoreExpiration: true,
+        }) as AccessToken;
 
-    if (authorization) {
-      const [schema, token] = authorization.split(' ');
-
-      if (schema.toLowerCase() === 'bearer' && token) {
-        try {
-          const decodedToken: AccessToken = jwt.decode(
-            token,
-            process.env.SECRET as string,
-          );
-
-          if (!options?.validateExpiry || Date.now() < decodedToken.exp) {
-            request.accessToken = decodedToken;
-            next();
-            return;
-          }
-        } catch (error) {
-          reply.send(new AuthenticationError('Access token is malformed'));
+        if (Date.now() <= decodedToken.exp) {
+          request.accessToken = decodedToken;
+          next();
+          return;
+        } else {
+          reply.send(new AuthenticationError('Access token is expired'));
           return;
         }
+      } catch (error: any) {
+        reply.send(new AuthenticationError('Access token is malformed'));
+        return;
       }
     }
+  }
 
-    if (options?.requireToken && !request.accessToken) {
-      reply.send(new AuthenticationError('Access token is missing or expired'));
-      return;
-    }
+  if (!request.accessToken) {
+    reply.send(new AuthenticationError('Access token is missing'));
+    return;
+  }
 
-    next();
-  };
+  next();
 };

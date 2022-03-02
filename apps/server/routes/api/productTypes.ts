@@ -11,7 +11,7 @@ import { NotFoundError } from '~/utils/errors';
 
 const productTypeRouter: Plugin = (app, opts, done) => {
   app.get('/', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -25,7 +25,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:productTypeID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -45,7 +45,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(productTypeSchema), authenticate()],
+    preValidation: [validateBody(productTypeSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -63,7 +63,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
     preValidation: [
       validateParamIds,
       validateBody(productTypeSchema),
-      authenticate(),
+      authenticate,
     ],
 
     async handler(req, res) {
@@ -90,7 +90,7 @@ const productTypeRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:productTypeID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;

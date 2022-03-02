@@ -11,7 +11,7 @@ import { NotFoundError } from '~/utils/errors';
 
 const tagRouter: Plugin = (app, opts, done) => {
   app.get('/', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -23,7 +23,7 @@ const tagRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:productID/tags', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -46,7 +46,7 @@ const tagRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:tagID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -64,7 +64,7 @@ const tagRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(tagSchema), authenticate()],
+    preValidation: [validateBody(tagSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -79,7 +79,7 @@ const tagRouter: Plugin = (app, opts, done) => {
   });
 
   app.put('/:tagID', {
-    preValidation: [validateParamIds, validateBody(tagSchema), authenticate()],
+    preValidation: [validateParamIds, validateBody(tagSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -105,7 +105,7 @@ const tagRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:tagID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;

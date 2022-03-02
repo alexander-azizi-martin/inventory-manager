@@ -25,7 +25,7 @@ const CSV_HEADERS = [
 
 const productRouter: Plugin = (app, opts, done) => {
   app.get('/', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -40,7 +40,7 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.post('/', {
-    preValidation: [validateBody(productSchema), authenticate()],
+    preValidation: [validateBody(productSchema), authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -84,7 +84,7 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/export', {
-    preValidation: [authenticate()],
+    preValidation: [authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -131,7 +131,7 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.get('/:productID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
@@ -155,7 +155,7 @@ const productRouter: Plugin = (app, opts, done) => {
     preValidation: [
       validateParamIds,
       validateBody(productSchema),
-      authenticate(),
+      authenticate,
     ],
 
     async handler(req, res) {
@@ -215,7 +215,7 @@ const productRouter: Plugin = (app, opts, done) => {
   });
 
   app.delete('/:productID', {
-    preValidation: [validateParamIds, authenticate()],
+    preValidation: [validateParamIds, authenticate],
 
     async handler(req, res) {
       const { sub: userID } = req.accessToken;
