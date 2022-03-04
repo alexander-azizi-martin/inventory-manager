@@ -1,5 +1,4 @@
 import axios, { AxiosResponse, AxiosError, Axios } from 'axios';
-import jwt from 'jsonwebtoken';
 
 import type { ProductForm, AccessToken, Session } from '~/types';
 import useSession from '~/utils/useSession';
