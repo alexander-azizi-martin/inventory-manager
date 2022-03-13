@@ -1,6 +1,6 @@
 # Inventory Manager
 
-This is a full stack web application to track and manage inventory. The application uses Node JS, Fastify, PostgreSQL, and Prisma for the backend, and Next JS, Material UI, and Tailwind CSS for the frontend. Additionally Typescript is used on both the front and backend. The website can be viewed at [shopify-inventory-manager.netlify.app](https://shopify-inventory-manager.netlify.app). 
+This is a full stack web application to track and manage inventory. The application uses Node JS, Fastify, PostgreSQL, and Prisma for the backend, and Next JS, Material UI, and Tailwind CSS for the frontend. Additionally Typescript is used on both the front and backend. The website can be viewed at [product-inventory-manager.netlify.app](https://product-inventory-manager.netlify.app). 
 
 > Note the initial load of the website might be a little slow since Heroku puts the server to sleep after 30 minutes of inactivity.
 
