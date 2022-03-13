@@ -177,38 +177,39 @@ const productRouter: Plugin = (app, opts, done) => {
         return;
       }
 
-      await app.prisma.$queryRaw`
-        DELETE FROM "_ProductTags" WHERE "A"=${productID};
-      `;
-
-      const updatedProduct = await app.prisma.products.update({
-        where: { productID },
-        data: {
-          ...newProduct,
-          Tags: {
-            connectOrCreate: tags.map((tag) => ({
-              create: { tag, userID },
-              where: { userID_tag: { userID, tag } },
-            })),
-          },
-          Vendor: {
-            connectOrCreate: {
-              create: { vendor, userID },
-              where: { userID_vendor: { userID, vendor } },
+      const [, updatedProduct] = await app.prisma.$transaction([
+        app.prisma.$queryRaw`
+          DELETE FROM "_ProductTags" WHERE "A"=${productID};
+        `,
+        app.prisma.products.update({
+          where: { productID },
+          data: {
+            ...newProduct,
+            Tags: {
+              connectOrCreate: tags.map((tag) => ({
+                create: { tag, userID },
+                where: { userID_tag: { userID, tag } },
+              })),
+            },
+            Vendor: {
+              connectOrCreate: {
+                create: { vendor, userID },
+                where: { userID_vendor: { userID, vendor } },
+              },
+            },
+            ProductType: {
+              connectOrCreate: {
+                create: { productType, userID },
+                where: { userID_productType: { userID, productType } },
+              },
+            },
+            User: {
+              connect: { userID },
             },
           },
-          ProductType: {
-            connectOrCreate: {
-              create: { productType, userID },
-              where: { userID_productType: { userID, productType } },
-            },
-          },
-          User: {
-            connect: { userID },
-          },
-        },
-        include: { Tags: true, Vendor: true, ProductType: true },
-      });
+          include: { Tags: true, Vendor: true, ProductType: true },
+        }),
+      ]);
 
       res.code(201).send(updatedProduct);
     },
