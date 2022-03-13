@@ -4,8 +4,6 @@ This is a full stack web application to track and manage inventory. The applicat
 
 > Note the initial load of the website might be a little slow since Heroku puts the server to sleep after 30 minutes of inactivity.
 
-The available endpoints to the REST api can found in `REST.md`.
-
 ## Getting Started
 
 1. Install [Node JS](https://nodejs.org/en/download/), [PostgresSQL](https://www.postgresql.org/download/), and [Yarn](https://classic.yarnpkg.com/en/docs/install#windows-stable) 
